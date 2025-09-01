@@ -79,8 +79,8 @@ func (p *plugin) findAndCreateUpstream(conn libplugin.ConnMetadata, password str
 				return p.createUpstream(conn, to)
 			}
 		}
-	}else {
-		return nil, err
+	} else {
+		return nil, fmt.Errorf("got invalid status code [%v] from remote for user [%v]", resp.StatusCode, user)
 	}
 	return nil, fmt.Errorf("no matching pipe for username [%v] found", user)
 }

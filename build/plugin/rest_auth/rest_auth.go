@@ -10,11 +10,13 @@ import (
 	"fmt"
 	"github.com/tg123/sshpiper/libplugin"
 	"golang.org/x/crypto/ssh"
+	"github.com/urfave/cli/v2"
 )
 
 type plugin struct {
 	URL        string
 	Insecure bool
+	Headers  cli.StringSlice
 }
 
 type piperTo struct {
@@ -44,7 +46,24 @@ func (p *plugin) supportedMethods() ([]string, error) {
 func (p *plugin) findAndCreateUpstream(conn libplugin.ConnMetadata, password string, publicKey []byte) (*libplugin.Upstream, error) {
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: p.Insecure}
 	user := conn.User()
-	resp, err := http.Get(p.URL + fmt.Sprintf("/%s", url.QueryEscape(user)))
+
+	// Create a new HTTP request
+    req, err := http.NewRequest("GET", p.URL+fmt.Sprintf("/%s", url.QueryEscape(user)), nil)
+    if err != nil {
+    	return nil, err
+    }
+
+    // Add custom headers from the plugin.Headers slice
+    for _, header := range p.Headers.Value() {
+    	parts := bytes.SplitN([]byte(header), []byte(": "), 2)
+    	if len(parts) == 2 {
+    	    req.Header.Set(string(parts[0]), string(parts[1]))
+    	}
+    }
+
+    // Perform the request
+    client := &http.Client{}
+    resp, err := client.Do(req)
 	if err != nil {
 		return nil, err
 	}

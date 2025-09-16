@@ -26,6 +26,12 @@ func main(){
 				EnvVars:     []string{"REST_AUTH_INSECURE"},
 				Destination: &plugin.Insecure,
 			},
+            &cli.StringSliceFlag{
+        		Name:    "header",
+        		Usage:   "Header line to add to the rest request",
+        		EnvVars: []string{"REST_AUTH_HEADERS"},
+        		Destination: &plugin.Headers,
+        	},
 		},
 		CreateConfig: func(c *cli.Context) (*libplugin.SshPiperPluginConfig, error) {
 			return &libplugin.SshPiperPluginConfig{
